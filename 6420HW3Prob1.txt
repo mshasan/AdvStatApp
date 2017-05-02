@@ -1,0 +1,179 @@
+######   Problem 1   ######-------------------------------------------------
+gasd<-read.table("gasd96.txt",h=T)
+attach(gasd)
+
+# the Null Model
+library(MPV)
+null=lm(T8~1, data=gasd)
+summary(null)				# average = yhat = beta0 = 95.207
+sqrt(PRESS(null)/length(T8))
+
+## (a) (b). check the correlations  
+round(cor(cbind(T8, T3, T5, ENRL, DENS, IMTR, IM, IL, PLUN)),3)	# In real life incase of negeative corr. both variable don't need to use.
+
+
+## (c). full model
+full<-lm(T8~T3+T5+ENRL+DENS+IMTR+IM+IL+PLUN, data=gasd)	# RMSE = 9.118
+summary(full)
+sqrt(PRESS(full)/length(T8))
+
+
+
+## (d). Backwards selection with alpha=0.01
+f=summary(full)
+max(f$coeff[,4])
+#drop IL with p-value= 0.4452487
+    reduced=update(full,.~. -IL)
+    r1=summary(reduced);r1
+    max(r1$coeff[,4])
+
+#drop IMTR with p-value=0.1045035
+    reduced=update(r1,.~. -IMTR)
+    r2=summary(reduced);r2
+    max(r2$coeff[,4])
+
+#drop DENS with p-value= 0.03090012
+    reduced=update(r2,.~. -DENS)
+    r3=summary(reduced);r3
+    max(r3$coeff[,4])
+
+#drop ENRL with p-value= 0.1309623
+    reduced=update(r3,.~. -ENRL)
+    r4=summary(reduced);r4
+    max(r4$coeff[,4])
+
+#drop IM with p-value= 0.02252727
+    reduced=update(r4,.~. -IM)
+    r5=summary(reduced);r5
+    max(r5$coeff[,4])
+sqrt(PRESS(reduced)/length(T8))
+
+
+
+    #drop IMTR with p-value=..., etc. (several terms will drop.)
+       
+    
+## (e)-(i). use R-squared criteria to find the best 1-variable, 2-variable, ..., 8-variable models
+gasd=gasd[,4:11]
+
+library(leaps)
+
+g.r2=leaps( x=gasd[,4:11], y=gasd[,3], names=names(gasd)[4:11], method="r2", nbest=1)
+cbind(g.r2$which, r2=g.r2$r2)
+
+    #best 1-variable
+    v1=lm(T8~T5, data=gasd)
+    summary(v1)
+sqrt(PRESS(v1)/length(T8)) 
+       
+    #best 2-variable    
+    v2=lm(T8~T5+PLUN, data=gasd)
+    summary(v2)
+sqrt(PRESS(v2)/length(T8)) 
+
+ #best 3-variable    
+    v3=lm(T8~T3+T5+PLUN, data=gasd)
+    summary(v3)
+sqrt(PRESS(v3)/length(T8))
+
+#best 4-variable    
+    v4=lm(T8~T3+T5+IM+PLUN, data=gasd)
+    summary(v4)
+sqrt(PRESS(v4)/length(T8))
+    
+#best 5-variable    
+    v5=lm(T8~T3+T5+IM+IL+PLUN, data=gasd)
+    summary(v5)
+sqrt(PRESS(v5)/length(T8))
+    
+#best 6-variable    
+    v6=lm(T8~T3+T5+DENS+IM+IL+PLUN, data=gasd)
+    summary(v6)
+sqrt(PRESS(v6)/length(T8))
+
+#best 7-variable    
+    v7=lm(T8~T3+T5+ENRL+DENS+IMTR+IM+PLUN, data=gasd)
+    summary(v7)
+sqrt(PRESS(v7)/length(T8))
+
+
+# Backward model
+backward <- lm(T8~T3+T5+PLUN, data=gasd)
+summary(backward)     
+sqrt(PRESS(backward)/length(T8))
+
+
+#get AIC criterion (assuming you've defined v1, v2 ... v8, full)
+AIC_backward=extractAIC(backward)
+AIC_null=extractAIC(null)
+AIC_v1=extractAIC(v1)
+AIC_v2=extractAIC(v2)
+AIC_v3=extractAIC(v3)
+AIC_v4=extractAIC(v4)
+AIC_v5=extractAIC(v5)
+AIC_v6=extractAIC(v6)
+AIC_v7=extractAIC(v7)
+AIC_full=extractAIC(full)
+AIC=rbind(AIC_backward, AIC_null, AIC_v1, AIC_v2, AIC_v3, AIC_v4, AIC_v5, AIC_v6, AIC_v7, AIC_full)
+AIC
+min(AIC[,2])
+
+#get BIC criterion
+BIC_backward=extractAIC(backward, k=log(174))
+BIC_null=extractAIC(null, k=log(174))
+BIC_v1=extractAIC(v1, k=log(174))
+BIC_v2=extractAIC(v2, k=log(174))
+BIC_v3=extractAIC(v3, k=log(174))
+BIC_v4=extractAIC(v4, k=log(174))
+BIC_v5=extractAIC(v5, k=log(174))
+BIC_v6=extractAIC(v6, k=log(174))
+BIC_v7=extractAIC(v7, k=log(174))
+BIC_full=extractAIC(full, k=log(174))
+BIC=rbind(BIC_backward, BIC_null, BIC_v1, BIC_v2, BIC_v3, BIC_v4, BIC_v5, BIC_v6, BIC_v7, BIC_full)
+BIC
+min(BIC[,2])
+
+
+#get Cp for each model    
+g.cp=leaps( x=gasd[,4:11], y=gasd[,3], names=names(gasd)[4:11], method="Cp", nbest=1)
+round(rbind(Cp=g.cp$Cp),3)   	# stop at 7 var. model      
+
+
+## (h). F-test for reducing v6 to v3
+anova(v6,v3)
+
+
+## (j). get RMS_Press
+library(MPV)
+RMSPress_backward=sqrt(PRESS(backward)/174)
+RMSPress_null=sqrt(PRESS(null)/174)
+RMSPress_v1=sqrt(PRESS(v1)/174)
+RMSPress_v2=sqrt(PRESS(v2)/174)
+RMSPress_v3=sqrt(PRESS(v3)/174)
+RMSPress_v4=sqrt(PRESS(v4)/174)
+RMSPress_v5=sqrt(PRESS(v5)/174)
+RMSPress_v6=sqrt(PRESS(v6)/174)
+RMSPress_v7=sqrt(PRESS(v7)/174)
+RMSPress_full=sqrt(PRESS(full)/174)
+
+RMSPress=rbind(RMSPress_backward, RMSPress_null, RMSPress_v1, RMSPress_v2, RMSPress_v3, RMSPress_v4, RMSPress_v5, RMSPress_v6, RMSPress_v7, RMSPress_full)
+RMSPress
+min(RMSPress)
+
+# k
+#best 3-variable    
+    v3=lm(T8~T3+T5+PLUN, data=gasd)
+summary(v3)
+length(T8)  
+ 
+
+## (l). get inverse matrix of [X'X] for model v3 --- xtxi
+x=cbind(1, T3, T5, PLUN)
+xtx=t(x) %*% x
+xtxi <- solve(t(x) %*% x)
+dim(xtxi)
+round(xtxi, 3)
+
+
+
+

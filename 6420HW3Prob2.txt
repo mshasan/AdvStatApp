@@ -1,0 +1,13 @@
+######   Problem 2 (basic SAS commands)   ######-------------------------------------------------
+DATA FUELDAT;
+INFILE 'fuel.txt' firstobs=2;
+INPUT CS ST $ OPO TAX NLIC INC ROAD FUELC;
+DLIC = 100* (NLIC/POP);
+FUEL = 1000* (FUELC/POP);
+RUN;
+
+PROC REG DATA=FUELDAT;
+MODEL FUEL = TAX DLIC INC/ R INFLUENCE;
+RUN;
+
+

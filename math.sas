@@ -1,0 +1,114 @@
+data math;
+input ID METHOD $ GENDER $ PRE POST;
+cards;
+1	T	M	42	67
+2	T	M	69	65
+3	T	M	70	83
+4	T	M	20	38
+5	T	M	62	67
+6	T	M	64	46
+7	T	M	80	73
+8	T	M	52	33
+9	T	M	38	57
+10	T	M	19	32
+11	T	M	57	54
+12	T	M	30	25
+13	T	F	8	9
+14	T	F	55	46
+15	T	F	30	57
+16	T	F	67	80
+17	T	F	26	37
+18	T	F	25	50
+19	T	F	79	88
+20	T	F	75	34
+21	T	F	45	68
+22	T	F	25	61
+23	T	F	65	51
+24	T	F	55	67
+25	T	F	32	83
+26	T	M	6	19
+27	T	M	42	62
+28	T	M	14	34
+29	T	M	12	16
+30	T	M	41	58
+31	T	M	41	33
+32	T	M	67	69
+33	T	M	32	30
+34	T	M	54	53
+35	T	M	59	88
+36	T	M	57	64
+37	T	M	3	16
+38	T	M	43	41
+39	T	M	15	36
+40	T	F	26	40
+41	T	F	26	40
+42	T	F	23	18
+43	T	F	29	24
+44	T	F	34	68
+45	T	F	63	59
+46	T	F	63	51
+47	T	F	7	4
+48	T	F	13	51
+49	N	M	43	47
+50	N	M	74	90
+51	N	M	64	85
+52	N	M	30	64
+53	N	M	83	70
+54	N	M	46	44
+55	N	M	79	61
+56	N	M	6	28
+57	N	M	59	72
+58	N	M	44	18
+59	N	M	28	76
+60	N	M	24	45
+61	N	M	40	46
+62	N	F	88	64
+63	N	F	30	72
+64	N	F	43	76
+65	N	F	69	80
+66	N	F	19	32
+67	N	F	86	72
+68	N	F	65	35
+69	N	F	92	81
+70	N	F	63	76
+71	N	F	54	60
+72	N	F	27	69
+73	N	M	54	74
+74	N	M	20	43
+75	N	M	33	65
+76	N	M	20	47
+77	N	M	54	52
+78	N	M	17	31
+79	N	M	70	66
+80	N	M	40	40
+81	N	M	58	46
+82	N	M	31	27
+83	N	M	66	69
+84	N	M	28	26
+85	N	F	85	96
+86	N	F	39	67
+87	N	F	29	36
+88	N	F	10	18
+89	N	F	50	84
+90	N	F	66	66
+91	N	F	33	52
+92	N	F	19	58
+93	N	F	37	62
+94	N	F	17	17
+95	N	F	32	55
+96	N	F	59	76
+97	N	F	27	40
+98	N	F	64	56
+;
+proc print data=math;
+run;
+proc glm;
+class method gender;
+model post = method gender method*gender;
+lsmeans method gender method*gender;
+run;
+
+proc glm;
+class method gender;
+model post = method gender method*gender pre/solution;
+run;
